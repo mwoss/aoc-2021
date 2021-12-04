@@ -21,7 +21,7 @@ func readMeasurement(scanner *bufio.Scanner) int {
 	return convertStrToInt(scanner.Text())
 }
 
-func countDepthMeasurementIncrease() int {
+func CountDepthMeasurementIncrease() int {
 	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -47,7 +47,7 @@ func countDepthMeasurementIncrease() int {
 	return increased
 }
 
-func countDepthMeasurementIncreaseSlidingWindow() int {
+func CountDepthMeasurementIncreaseSlidingWindow() int {
 	file, err := os.Open("input.txt")
 	if err != nil {
 		log.Fatal(err)
@@ -74,6 +74,6 @@ func countDepthMeasurementIncreaseSlidingWindow() int {
 }
 
 func main() {
-	fmt.Println(countDepthMeasurementIncrease())
-	fmt.Println(countDepthMeasurementIncreaseSlidingWindow())
+	fmt.Println(CountDepthMeasurementIncrease())
+	fmt.Println(CountDepthMeasurementIncreaseSlidingWindow())
 }
