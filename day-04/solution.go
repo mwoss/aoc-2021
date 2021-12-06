@@ -1,10 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"io/ioutil"
 	"log"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -20,26 +19,20 @@ type BingoCell struct {
 	isMarked bool
 }
 
-func prepareBingoBoards(scanner *bufio.Scanner) ([][5][5]BingoCell, map[string][]NumberPosition) {
+func prepareBingoBoards(unparsedBoards []string) ([][5][5]BingoCell, map[string][]NumberPosition) {
 	var boards [][5][5]BingoCell
-	board, rowId := [5][5]BingoCell{}, 0
 	numberToPositions := make(map[string][]NumberPosition)
 
-	for scanner.Scan() {
-		values := scanner.Text()
-		if values == "" {
-			boards = append(boards, board)
-			board, rowId = [5][5]BingoCell{}, 0
-			continue
+	for boardId, unparsedBoard := range unparsedBoards {
+		board := [5][5]BingoCell{}
+		for rowId, row := range strings.Split(unparsedBoard, "\n") {
+			for colId, num := range strings.Fields(row) {
+				board[rowId][colId] = BingoCell{num, false}
+				numberToPositions[num] = append(numberToPositions[num], NumberPosition{boardId, rowId, colId})
+			}
 		}
-
-		for i, num := range strings.Fields(values) {
-			board[rowId][i] = BingoCell{num, false}
-			numberToPositions[num] = append(numberToPositions[num], NumberPosition{len(boards), rowId, i})
-		}
-		rowId++
+		boards = append(boards, board)
 	}
-	boards = append(boards, board)
 
 	return boards, numberToPositions
 }
@@ -76,25 +69,15 @@ func checkCol(board *[5][5]BingoCell, col int) bool {
 }
 
 func FindFirstWinningBoardScore() int {
-	file, err := os.Open("day-04/input.txt")
+	b, err := ioutil.ReadFile("day-04/input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(file)
 
-	scanner := bufio.NewScanner(file)
-	scanner.Scan()
+	content := strings.Split(string(b), "\n\n")
+	numbers, unparsedBoards := strings.Split(content[0], ","), content[1:]
 
-	numbers := strings.Split(scanner.Text(), ",")
-
-	scanner.Scan() // skip empty line, I will learn how to do it better in future aoc problems :3
-
-	boards, numberToPositions := prepareBingoBoards(scanner)
+	boards, numberToPositions := prepareBingoBoards(unparsedBoards)
 
 	for _, number := range numbers {
 		positions := numberToPositions[number]
@@ -111,25 +94,15 @@ func FindFirstWinningBoardScore() int {
 }
 
 func FindLastWinningBoardScore() int {
-	file, err := os.Open("day-04/input.txt")
+	b, err := ioutil.ReadFile("day-04/input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(file)
 
-	scanner := bufio.NewScanner(file)
-	scanner.Scan()
+	content := strings.Split(string(b), "\n\n")
+	numbers, unparsedBoards := strings.Split(content[0], ","), content[1:]
 
-	numbers := strings.Split(scanner.Text(), ",")
-
-	scanner.Scan() // skip empty line, I will learn how to do it better in future aoc problems :3
-
-	boards, numberToPositions := prepareBingoBoards(scanner)
+	boards, numberToPositions := prepareBingoBoards(unparsedBoards)
 
 	recentlyWonScore := -1
 	alreadyWonBoards := make(map[int]struct{})
