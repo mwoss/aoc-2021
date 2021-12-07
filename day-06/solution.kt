@@ -42,7 +42,7 @@ fun getNumberOfFishesAfterDummy(fishes: List<Int>, days: Int): Int {
 
 
 fun main() {
-    val lanternFishes = File("src/input.txt")
+    val lanternFishes = File("input.txt")
         .readText()
         .trim()
         .split(",")

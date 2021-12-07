@@ -18,31 +18,33 @@ fun findOptimalHorizontalPositionLinearConsumption(objects: List<Int>): Pair<Int
     return Pair(floor(avg).toInt(), ceil(avg).toInt())
 }
 
+fun calculateMinimalCostConstantConsumption(objects: List<Int>): Int {
+    val position = findOptimalHorizontalPositionConstConsumption(objects)
+    return objects.fold(0) { acc, obj -> acc + abs(position - obj) }
+}
+
+fun calculateMinimalCostLinearConsumption(objects: List<Int>): Int {
+    val (potentialPos1, potentialPos2) = findOptimalHorizontalPositionLinearConsumption(objects)
+    val potentialSpent1 = objects.fold(0) { acc, obj ->
+        acc + abs(potentialPos1 - obj) * (abs(potentialPos1 - obj) + 1) / 2
+    }
+    val potentialSpent2 = objects.fold(0) { acc, obj ->
+        acc + abs(potentialPos2 - obj) * (abs(potentialPos2 - obj) + 1) / 2
+    }
+    return min(potentialSpent1, potentialSpent2)
+}
+
 
 fun getFuelSpentTowardsOptimalPosition(objects: List<Int>, method: OptimizationMethod): Int {
     return when (method) {
-        OptimizationMethod.CONSTANT -> {
-            val position = findOptimalHorizontalPositionConstConsumption(objects)
-            return objects.fold(0) { acc, obj -> acc + abs(position - obj) }
-        }
-        OptimizationMethod.LINEAR -> {
-            val (potentialPos1, potentialPos2) = findOptimalHorizontalPositionLinearConsumption(objects)
-            val potentialSpent1 =
-                objects.fold(0) { acc, obj -> acc + abs(potentialPos1 - obj) * (abs(potentialPos1 - obj) + 1) / 2 }
-            val potentialSpent2 =
-                objects.fold(0) { acc, obj -> acc + abs(potentialPos2 - obj) * (abs(potentialPos2 - obj) + 1) / 2 }
-            if (potentialSpent1 < potentialSpent2) {
-                potentialSpent1
-            } else {
-                potentialSpent2
-            }
-        }
+        OptimizationMethod.CONSTANT -> calculateMinimalCostConstantConsumption(objects)
+        OptimizationMethod.LINEAR -> calculateMinimalCostLinearConsumption(objects)
     }
 }
 
 
 fun main() {
-    val crabsPositions = File("src/input.txt").readText().trim().split(",").map { it.toInt() }
+    val crabsPositions = File("input.txt").readText().trim().split(",").map { it.toInt() }
 
     println(getFuelSpentTowardsOptimalPosition(listOf(16, 1, 2, 0, 4, 2, 7, 1, 2, 14), OptimizationMethod.CONSTANT))
     println(getFuelSpentTowardsOptimalPosition(listOf(16, 1, 2, 0, 4, 2, 7, 1, 2, 14), OptimizationMethod.LINEAR))
