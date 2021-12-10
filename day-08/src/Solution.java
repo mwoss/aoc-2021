@@ -7,6 +7,13 @@ import java.util.stream.Collectors;
 
 public class Solution {
 
+    record Entry(String[] inputSignal, String[] outputSignals) {
+        static Entry parse(String line) {
+            var signals = line.split(" \\| ");
+            return new Entry(signals[0].split(" "), signals[1].split(" "));
+        }
+    }
+
     public long countUniquelyDistinguishableSignal(String rawDisplayData) {
         return Arrays.stream(rawDisplayData.trim().split("\n"))
                 .map(line -> line.split(" \\| ")[1].split(" "))
@@ -16,15 +23,13 @@ public class Solution {
     }
 
     public long sumDecodedOutputSignals(String rawDisplayData) {
-        var x = Arrays.stream(rawDisplayData.trim().split("\n"))
-                .map(line -> line.split(" \\| ")).toList();
+        var x = Arrays.stream(rawDisplayData.trim().split("\n")).map(Entry::parse).toList();
 
         var overallSum = 0L;
-        for (String[] line : x) {
-            var left = line[0];
-            var right = line[1];
+        for (Entry entry : x) {
+            var numbers = entry.inputSignal;
+            var output = entry.outputSignals;
 
-            var numbers = left.split(" ");
             var distinguishableNumbers = Arrays.stream(numbers).filter(this::isUniquelyDistinguishableSignal).sorted(Comparator.comparingInt(String::length)).toList(); // 1,7,4,8
             var indistinguishableNumbers = Arrays.stream(numbers).filter(Predicate.not(this::isUniquelyDistinguishableSignal)).toList();
 
@@ -46,14 +51,12 @@ public class Solution {
                 signalToNumber.put(toSet(indistinguishableNumber), decodeSignal(indistinguishableNumber, knownNumbers));
             }
 
-            var output = right.split(" ");
             var multiplier = 1;
             var number = 0;
             for (int i = output.length - 1; i >= 0; i--) {
                 number += (long) signalToNumber.get(toSet(output[i])) * multiplier;
                 multiplier *= 10;
             }
-            System.out.println(number);
             overallSum += number;
         }
 
@@ -81,13 +84,6 @@ public class Solution {
             eightMinusSeven.removeAll(baseMapping.get(7));
             var fourMinusOne = new HashSet<>(baseMapping.get(4));
             fourMinusOne.removeAll(baseMapping.get(1));
-
-
-            System.out.print(baseMapping.get(8));
-            System.out.print(baseMapping.get(7));
-            System.out.print(signalCharacters);
-            System.out.print(eightMinusSeven);
-            System.out.println(signalCharacters.stream().filter(eightMinusSeven::contains).collect(Collectors.toSet()));
 
             if (signalCharacters.stream().filter(eightMinusSeven::contains).collect(Collectors.toSet()).equals(eightMinusSeven)) {
                 return 6;
