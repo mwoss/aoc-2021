@@ -7,10 +7,16 @@ import java.util.stream.Collectors;
 
 public class Solution {
 
-    record Entry(String[] inputSignal, String[] outputSignals) {
+    private record Entry(String[] inputSignal, String[] outputSignals) {
         static Entry parse(String line) {
             var signals = line.split(" \\| ");
             return new Entry(signals[0].split(" "), signals[1].split(" "));
+        }
+    }
+
+    private static class CharacterSet {
+        private static Set<Character> of(String input) {
+            return input.chars().mapToObj(e -> (char) e).collect(Collectors.toUnmodifiableSet());
         }
     }
 
@@ -23,80 +29,82 @@ public class Solution {
     }
 
     public long sumDecodedOutputSignals(String rawDisplayData) {
-        var x = Arrays.stream(rawDisplayData.trim().split("\n")).map(Entry::parse).toList();
+        var entries = Arrays.stream(rawDisplayData.trim().split("\n")).map(Entry::parse).toList();
 
         var overallSum = 0L;
-        for (Entry entry : x) {
-            var numbers = entry.inputSignal;
-            var output = entry.outputSignals;
+        for (Entry entry : entries) {
+            var distinguishableSignals = Arrays.stream(entry.inputSignal)
+                    .filter(this::isUniquelyDistinguishableSignal)
+                    .sorted(Comparator.comparingInt(String::length))
+                    .toList(); // guaranteed that contains only four signals (ordered): 1,7,4,8
+            var indistinguishableSignals = Arrays.stream(entry.inputSignal)
+                    .filter(Predicate.not(this::isUniquelyDistinguishableSignal))
+                    .toList();
 
-            var distinguishableNumbers = Arrays.stream(numbers).filter(this::isUniquelyDistinguishableSignal).sorted(Comparator.comparingInt(String::length)).toList(); // 1,7,4,8
-            var indistinguishableNumbers = Arrays.stream(numbers).filter(Predicate.not(this::isUniquelyDistinguishableSignal)).toList();
 
-            var knownNumbers = Map.of(
-                    1, toSet(distinguishableNumbers.get(0)),
-                    7, toSet(distinguishableNumbers.get(1)),
-                    4, toSet(distinguishableNumbers.get(2)),
-                    8, toSet(distinguishableNumbers.get(3))
+            var knownNumberToDecomposedSignal = Map.of(
+                    1, CharacterSet.of(distinguishableSignals.get(0)),
+                    7, CharacterSet.of(distinguishableSignals.get(1)),
+                    4, CharacterSet.of(distinguishableSignals.get(2)),
+                    8, CharacterSet.of(distinguishableSignals.get(3))
             );
 
-            var signalToNumber = new HashMap<Set<Character>, Integer>(Map.of(
-                    toSet(distinguishableNumbers.get(0)), 1,
-                    toSet(distinguishableNumbers.get(1)), 7,
-                    toSet(distinguishableNumbers.get(2)), 4,
-                    toSet(distinguishableNumbers.get(3)), 8
+            var decomposedSignalToNumber = new HashMap<>(Map.of(
+                    CharacterSet.of(distinguishableSignals.get(0)), 1,
+                    CharacterSet.of(distinguishableSignals.get(1)), 7,
+                    CharacterSet.of(distinguishableSignals.get(2)), 4,
+                    CharacterSet.of(distinguishableSignals.get(3)), 8
             ));
 
-            for (String indistinguishableNumber : indistinguishableNumbers) {
-                signalToNumber.put(toSet(indistinguishableNumber), decodeSignal(indistinguishableNumber, knownNumbers));
+            for (String signal : indistinguishableSignals) {
+                decomposedSignalToNumber.put(CharacterSet.of(signal), decodeSignal(signal, knownNumberToDecomposedSignal));
             }
 
-            var multiplier = 1;
-            var number = 0;
-            for (int i = output.length - 1; i >= 0; i--) {
-                number += (long) signalToNumber.get(toSet(output[i])) * multiplier;
-                multiplier *= 10;
-            }
-            overallSum += number;
+            overallSum += calculateOutputValue(entry.outputSignals, decomposedSignalToNumber);
         }
 
         return overallSum;
     }
 
-    private int decodeSignal(String signal, Map<Integer, Set<Character>> baseMapping) {
-        var signalLen = signal.length();
+    private int decodeSignal(String signal, Map<Integer, Set<Character>> knownNumberToDecomposedSignal) {
+        var decomposedSignal = CharacterSet.of(signal);
 
-        var signalCharacters = signal.chars().mapToObj(e -> (char) e).collect(Collectors.toSet());
+        if (signal.length() == 5) {
+            var eightMinusFour = new HashSet<>(knownNumberToDecomposedSignal.get(8));
+            eightMinusFour.removeAll(knownNumberToDecomposedSignal.get(4));
 
-        if (signalLen == 5) {
-            var one = baseMapping.get(1);
-            var eightMinusFour = new HashSet<>(baseMapping.get(8));
-            eightMinusFour.removeAll(baseMapping.get(4));
-            if (signalCharacters.stream().filter(one::contains).collect(Collectors.toSet()).equals(one)) {
+            if (decomposedSignal.containsAll(knownNumberToDecomposedSignal.get(1))) {
                 return 3;
-            } else if (signalCharacters.stream().filter(eightMinusFour::contains).collect(Collectors.toSet()).equals(eightMinusFour)) {
+            }
+            if (decomposedSignal.containsAll(eightMinusFour)) {
                 return 2;
-            } else {
-                return 5;
             }
-        } else {
-            var eightMinusSeven = new HashSet<>(baseMapping.get(8));
-            eightMinusSeven.removeAll(baseMapping.get(7));
-            var fourMinusOne = new HashSet<>(baseMapping.get(4));
-            fourMinusOne.removeAll(baseMapping.get(1));
-
-            if (signalCharacters.stream().filter(eightMinusSeven::contains).collect(Collectors.toSet()).equals(eightMinusSeven)) {
-                return 6;
-            } else if (signalCharacters.stream().filter(fourMinusOne::contains).collect(Collectors.toSet()).equals(fourMinusOne)) {
-                return 9;
-            } else {
-                return 0;
-            }
+            return 5;
         }
+
+        var eightMinusSeven = new HashSet<>(knownNumberToDecomposedSignal.get(8));
+        eightMinusSeven.removeAll(knownNumberToDecomposedSignal.get(7));
+
+        var fourMinusOne = new HashSet<>(knownNumberToDecomposedSignal.get(4));
+        fourMinusOne.removeAll(knownNumberToDecomposedSignal.get(1));
+
+        if (decomposedSignal.containsAll(eightMinusSeven)) {
+            return 6;
+        }
+        if (decomposedSignal.containsAll(fourMinusOne)) {
+            return 9;
+        }
+        return 0;
     }
 
-    private Set<Character> toSet(String input) {
-        return input.chars().mapToObj(e -> (char) e).collect(Collectors.toSet());
+    private int calculateOutputValue(String[] outputSignals, HashMap<Set<Character>, Integer> signalToNumber) {
+        var multiplier = 1;
+        var number = 0;
+        for (int i = outputSignals.length - 1; i >= 0; i--) {
+            number += (long) signalToNumber.get(CharacterSet.of(outputSignals[i])) * multiplier;
+            multiplier *= 10;
+        }
+        return number;
     }
 
 
