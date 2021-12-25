@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"container/list"
 	"fmt"
 	"log"
 	"os"
@@ -13,6 +12,14 @@ var leftToRightParentheses = map[string]string{
 	"[": "]",
 	"{": "}",
 	"<": ">",
+}
+
+var characterToValue = map[string]int{
+	"":  0,
+	")": 3,
+	"]": 57,
+	"}": 1197,
+	">": 25137,
 }
 
 func GetPenaltyCorruptedLines() int {
@@ -29,25 +36,27 @@ func GetPenaltyCorruptedLines() int {
 
 	scanner := bufio.NewScanner(file)
 
+	var errorScore int
 	for scanner.Scan() {
-		//line := scanner.Text()
-
+		character := findFirstInvalidCharacter(scanner.Text())
+		errorScore += characterToValue[character]
 	}
 
-	return 0
+	return errorScore
 }
 
 func findFirstInvalidCharacter(line string) string {
-	stack := list.New()
+	stack := Stack{}
 	for _, char := range line {
-		if val, ok := leftToRightParentheses[string(char)]; ok {
-			stack.PushBack(val)
-		} else if stack.Len() == 0 {
-			return string(char)
+		par := string(char)
+		if _, ok := leftToRightParentheses[par]; ok {
+			stack.Push(par)
+		} else if len(stack) == 0 {
+			return par
 		} else {
-			par := stack.Back()
-			if par.Value != leftToRightParentheses[string(char)] {
-				return string(char)
+			leftPar := stack.Pop()
+			if par != leftToRightParentheses[leftPar] {
+				return par
 			}
 		}
 	}
