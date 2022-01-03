@@ -73,7 +73,7 @@ def _propagate_energy(x: int, y: int, octo_cave: List[List[int]], already_flashe
 if __name__ == '__main__':
     octo_cave = []
     with open("input.txt", "r") as file:
-        for octo_row in file.readlines():
+        for octo_row in file:
             octo_cave.append([int(energy_lvl) for energy_lvl in octo_row.strip()])
 
     # we have to use deepcopy as we mutate our input ://
