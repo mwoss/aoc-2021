@@ -1,64 +1,62 @@
-import pprint
 from dataclasses import dataclass
-from typing import List, Tuple, Set
+from typing import List, Set
 
 
-@dataclass
+@dataclass(frozen=True)
+class Dot:
+    x: int
+    y: int
+
+
+@dataclass(frozen=True)
 class Fold:
     direction: str
     position: int
 
 
-def fold_left(dots: Set[Tuple[int, int]], fold_pos: int, max_x: int) -> Set[Tuple[int, int]]:
-    after_fold = set()
-    for x, y in dots:
-        len_after_fold = max(max_x - fold_pos, fold_pos)
-        after_fold.add((len_after_fold - abs(x - fold_pos), y))
+@dataclass
+class FoldedPaper:
+    dots: Set[Dot]
+
+
+def fold_left(dots: Set[Dot], fold_position: int, max_x: int) -> Set[Dot]:
+    after_fold, len_after_fold = set(), max(max_x - fold_position, fold_position)
+    for dot in dots:
+        after_fold.add(Dot(len_after_fold - abs(dot.x - fold_position), dot.y))
     return after_fold
 
 
-def fold_up(dots: Set[Tuple[int, int]], fold_pos: int, max_y: int) -> Set[Tuple[int, int]]:
-    after_fold = set()
-    len_after_fold = max(max_y - fold_pos, fold_pos)
-    for x, y in dots:
-        new_y = len_after_fold - abs(y - fold_pos)
-        after_fold.add((x, new_y))
+def fold_up(dots: Set[Dot], fold_position: int, max_y: int) -> Set[Dot]:
+    after_fold, len_after_fold = set(), max(max_y - fold_position, fold_position)
+    for dot in dots:
+        after_fold.add(Dot(dot.x, len_after_fold - abs(dot.y - fold_position)))
     return after_fold
 
 
-def count_dots_after_fold(dots: Set[Tuple[int, int]], folds: List[Fold]) -> int:
-
-    #
-    # board = [[0 for _ in range(max_x)] for _ in range(max_y)]
-
+def fold_paper(dots: Set[Dot], folds: List[Fold]) -> FoldedPaper:
     for fold in folds:
-        max_x = max(dots, key=lambda d: d[0])[0]
-        max_y = max(dots, key=lambda d: d[1])[1]
+        max_x: int = max(dots, key=lambda d: d.x).x
+        max_y: int = max(dots, key=lambda d: d.y).y
 
         if fold.direction == "x":
             dots = fold_left(dots, fold.position, max_x)
         else:
             dots = fold_up(dots, fold.position, max_y)
 
-    print_dots(dots)
-
-    return len(dots)
+    return FoldedPaper(dots)
 
 
-def print_dots(dots):
-    max_x = max(dots, key=lambda d: d[0])[0]
-    max_y = max(dots, key=lambda d: d[1])[1]
+def print_dotted_paper(dots: Set[Dot]) -> None:
+    max_x = max(dots, key=lambda d: d.x).x
+    max_y = max(dots, key=lambda d: d.y).y
 
-    board = [[0 for _ in range(max_x+1)] for _ in range(max_y+1)]
+    board = [["." for _ in range(max_x + 1)] for _ in range(max_y + 1)]
 
-    for x, y in dots:
-        board[y][x] = 1
+    for dot in dots:
+        board[dot.y][dot.x] = "X"
 
-    print(board)
-    import matplotlib.pyplot as plt
-
-    plt.imshow(board)
-    plt.show()
+    for row in board:
+        print(row)
 
 
 if __name__ == '__main__':
@@ -66,15 +64,14 @@ if __name__ == '__main__':
     with open("input.txt", "r") as file:
         for line in file:
             line = line.strip()
-
             if not line:
                 continue
-            if not line.startswith("fold"):
-                x, y = line.split(",")
-                dots.add((int(x), int(y)))
-            else:
+            if line.startswith("fold"):
                 direction, position = line.lstrip("fold along ").split("=")
                 folds.append(Fold(direction, int(position)))
+            else:
+                x, y = line.split(",")
+                dots.add(Dot(int(x), int(y)))
 
-    # print(count_dots_after_fold(dots, [folds[0]]))
-    print(count_dots_after_fold(dots, folds))
+    print(fold_paper(dots, [folds[0]]))
+    print(fold_paper(dots, folds))
