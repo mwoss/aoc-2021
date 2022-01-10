@@ -14,39 +14,20 @@ class Fold:
     position: int
 
 
-@dataclass
-class FoldedPaper:
-    dots: Set[Dot]
-
-
-def fold_left(dots: Set[Dot], fold_position: int, max_x: int) -> Set[Dot]:
-    after_fold, len_after_fold = set(), max(max_x - fold_position, fold_position)
-    for dot in dots:
-        after_fold.add(Dot(len_after_fold - abs(dot.x - fold_position), dot.y))
-    return after_fold
-
-
-def fold_up(dots: Set[Dot], fold_position: int, max_y: int) -> Set[Dot]:
-    after_fold, len_after_fold = set(), max(max_y - fold_position, fold_position)
-    for dot in dots:
-        after_fold.add(Dot(dot.x, len_after_fold - abs(dot.y - fold_position)))
-    return after_fold
-
-
-def fold_paper(dots: Set[Dot], folds: List[Fold]) -> FoldedPaper:
+def fold_paper(dots: Set[Dot], folds: List[Fold]) -> Set[Dot]:
     for fold in folds:
         max_x: int = max(dots, key=lambda d: d.x).x
         max_y: int = max(dots, key=lambda d: d.y).y
 
         if fold.direction == "x":
-            dots = fold_left(dots, fold.position, max_x)
+            dots = _fold_left(dots, fold.position, max_x)
         else:
-            dots = fold_up(dots, fold.position, max_y)
+            dots = _fold_up(dots, fold.position, max_y)
 
-    return FoldedPaper(dots)
+    return dots
 
 
-def print_dotted_paper(dots: Set[Dot]) -> None:
+def print_paper(dots: Set[Dot]) -> None:
     max_x = max(dots, key=lambda d: d.x).x
     max_y = max(dots, key=lambda d: d.y).y
 
@@ -57,6 +38,20 @@ def print_dotted_paper(dots: Set[Dot]) -> None:
 
     for row in board:
         print(row)
+
+
+def _fold_left(dots: Set[Dot], fold_position: int, max_x: int) -> Set[Dot]:
+    after_fold, len_after_fold = set(), max(max_x - fold_position, fold_position)
+    for dot in dots:
+        after_fold.add(Dot(len_after_fold - abs(dot.x - fold_position), dot.y))
+    return after_fold
+
+
+def _fold_up(dots: Set[Dot], fold_position: int, max_y: int) -> Set[Dot]:
+    after_fold, len_after_fold = set(), max(max_y - fold_position, fold_position)
+    for dot in dots:
+        after_fold.add(Dot(dot.x, len_after_fold - abs(dot.y - fold_position)))
+    return after_fold
 
 
 if __name__ == '__main__':
@@ -73,5 +68,10 @@ if __name__ == '__main__':
                 x, y = line.split(",")
                 dots.add(Dot(int(x), int(y)))
 
-    print(fold_paper(dots, [folds[0]]))
-    print(fold_paper(dots, folds))
+    single_folded_paper = fold_paper(dots, [folds[0]])
+    fully_folded_paper = fold_paper(dots, folds)
+
+    print(f"Dots after single fold: {len(single_folded_paper)}")
+    print(f"Dots after all folds: {len(fully_folded_paper)}")
+    print("Board after all folds:")
+    print_paper(fully_folded_paper)
