@@ -1,4 +1,4 @@
-from collections import Counter
+from collections import Counter, defaultdict
 
 
 def get_most_to_least_common_element_difference(polimer: str) -> int:
@@ -17,6 +17,24 @@ def polimerize(template: str, insertions: dict, steps: int) -> str:
         polimers = new_sequence
 
     return "".join(polimers)
+
+
+def polimerize_cache(template: str, insertions: dict, steps: int) -> str:
+    element_map = defaultdict(lambda: 0)
+    for i in range(len(template) - 1):
+        element_map[f'{template[i]}{template[i + 1]}'] += 1
+
+    for _ in range(steps):
+        temp_element_map = defaultdict(lambda: 0)
+        temp_element_map.update(element_map)
+        for element, count in element_map.items():
+            letter = insertions[element]
+            temp_element_map[f'{element[0]}{letter}'] += count
+        element_map = temp_element_map
+
+    most_common_element = max(element_map.values())
+    least_common_element = min(element_map.values())
+    return most_common_element - least_common_element
 
 
 if __name__ == '__main__':
