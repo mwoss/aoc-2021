@@ -19,21 +19,28 @@ def polimerize(template: str, insertions: dict, steps: int) -> str:
     return "".join(polimers)
 
 
-def polimerize_cache(template: str, insertions: dict, steps: int) -> str:
+def polimerize_cache(template: str, insertions: dict, steps: int) -> int:
     element_map = defaultdict(lambda: 0)
+    letter_map = defaultdict(lambda: 0)
     for i in range(len(template) - 1):
         element_map[f'{template[i]}{template[i + 1]}'] += 1
 
     for _ in range(steps):
         temp_element_map = defaultdict(lambda: 0)
-        temp_element_map.update(element_map)
+        temp_letter_map = defaultdict(lambda: 0)
         for element, count in element_map.items():
             letter = insertions[element]
             temp_element_map[f'{element[0]}{letter}'] += count
-        element_map = temp_element_map
+            temp_element_map[f'{letter}{element[1]}'] += count
+            temp_letter_map[element[0]] += count
+            temp_letter_map[element[1]] += count
+            temp_letter_map[letter] += count
 
-    most_common_element = max(element_map.values())
-    least_common_element = min(element_map.values())
+        element_map = temp_element_map
+        letter_map = temp_letter_map
+
+    most_common_element = max(letter_map.values())
+    least_common_element = min(letter_map.values())
     return most_common_element - least_common_element
 
 
@@ -50,3 +57,5 @@ if __name__ == '__main__':
 
     nth_polimer = polimerize(template, pair_to_insertion, 10)
     print(get_most_to_least_common_element_difference(nth_polimer))
+
+    print(polimerize_cache(template, pair_to_insertion, 10))
