@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"container/list"
 	"fmt"
 	"log"
 	"os"
@@ -25,6 +26,11 @@ func convertStrToInt(str string) int {
 	return converted
 }
 
+type Node struct {
+	index int
+	dist  int
+}
+
 func FindLowestRiskLevel() int {
 	file, err := os.Open("input.txt")
 	if err != nil {
@@ -45,6 +51,32 @@ func FindLowestRiskLevel() int {
 	}
 
 	fmt.Println(riskLevels)
+
+	nodeCount := len(riskLevels) * len(riskLevels[0])
+	rowCount := len(riskLevels[0])
+	visited := make([]bool, nodeCount)
+	dist := make([]int, nodeCount)
+
+	for i := range dist {
+		dist[i] = 10 // infinity in terms of risk level
+	}
+
+	dist[0] = 0
+
+	pq := list.New()
+	pq.PushFront(Node{0, 0})
+
+	for pq.Len() != 0 {
+		node := pq.Front().Value.(Node)
+
+		visited[node.index] = true
+
+		if dist[node.index] < node.dist {
+			continue
+		}
+
+
+	}
 
 	return 0
 }
