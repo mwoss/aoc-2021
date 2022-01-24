@@ -75,10 +75,29 @@ func FindLowestRiskLevel() int {
 			continue
 		}
 
+		potentialEdges := []int{node.index + rowCount, node.index - rowCount, node.index + 1, node.index - 1}
 
+		for _, edge := range potentialEdges {
+			if edge <= 0 || edge >= nodeCount {
+				continue
+			}
+			if visited[edge] {
+				continue
+			}
+			newDist := dist[node.index] + riskLevels[0][0] // fix
+
+			if newDist < dist[edge] {
+				dist[edge] = newDist
+				pq.PushFront(Node{edge, newDist})
+			}
+		}
+
+		if node.index == nodeCount-1 {
+			return dist[nodeCount]
+		}
 	}
 
-	return 0
+	return 10
 }
 
 func main() {
