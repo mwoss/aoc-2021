@@ -50,10 +50,9 @@ func FindLowestRiskLevel() int {
 		riskLevels = append(riskLevels, unpackInput(scanner.Text()))
 	}
 
-	fmt.Println(riskLevels)
-
 	nodeCount := len(riskLevels) * len(riskLevels[0])
 	rowCount := len(riskLevels[0])
+
 	visited := make([]bool, nodeCount)
 	dist := make([]int, nodeCount)
 
@@ -67,7 +66,10 @@ func FindLowestRiskLevel() int {
 	pq.PushFront(Node{0, 0})
 
 	for pq.Len() != 0 {
-		node := pq.Front().Value.(Node)
+		nodeEl := pq.Front()
+		pq.Remove(nodeEl)
+
+		node := nodeEl.Value.(Node)
 
 		visited[node.index] = true
 
@@ -84,7 +86,11 @@ func FindLowestRiskLevel() int {
 			if visited[edge] {
 				continue
 			}
-			newDist := dist[node.index] + riskLevels[0][0] // fix
+
+			edgeRow := edge / rowCount
+			edgeCol := edge - (edgeRow * rowCount)
+
+			newDist := dist[node.index] + riskLevels[edgeCol][edgeCol] // fix
 
 			if newDist < dist[edge] {
 				dist[edge] = newDist
