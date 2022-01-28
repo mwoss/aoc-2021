@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"container/list"
+	"container/heap"
 	"fmt"
 	"log"
 	"os"
@@ -62,18 +62,17 @@ func FindLowestRiskLevel() int {
 
 	dist[0] = 0
 
-	pq := list.New()
-	pq.PushFront(Node{0, 0})
+	pq := PriorityQueue{}
+	heap.Init(&pq)
+
+	heap.Push(&pq, &Item{value: 0, priority: 0})
 
 	for pq.Len() != 0 {
-		nodeEl := pq.Front()
-		pq.Remove(nodeEl)
-
-		node := nodeEl.Value.(Node)
+		node := heap.Pop(&pq).(*Item)
 
 		visited[node.index] = true
 
-		if dist[node.index] < node.dist {
+		if dist[node.index] < node.priority {
 			continue
 		}
 
@@ -94,7 +93,7 @@ func FindLowestRiskLevel() int {
 
 			if newDist < dist[edge] {
 				dist[edge] = newDist
-				pq.PushFront(Node{edge, newDist})
+				heap.Push(&pq, &Item{value: edge, priority: newDist})
 			}
 		}
 
