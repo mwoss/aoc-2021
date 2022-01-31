@@ -26,11 +26,6 @@ func convertStrToInt(str string) int {
 	return converted
 }
 
-type Node struct {
-	index int
-	dist  int
-}
-
 func FindLowestRiskLevel() int {
 	file, err := os.Open("input.txt")
 	if err != nil {
@@ -70,13 +65,13 @@ func FindLowestRiskLevel() int {
 	for pq.Len() != 0 {
 		node := heap.Pop(&pq).(*Item)
 
-		visited[node.index] = true
+		visited[node.value] = true
 
-		if dist[node.index] < node.priority {
+		if dist[node.value] < node.priority {
 			continue
 		}
 
-		potentialEdges := []int{node.index + rowCount, node.index - rowCount, node.index + 1, node.index - 1}
+		potentialEdges := []int{node.value + rowCount, node.value - rowCount, node.value + 1, node.value - 1}
 
 		for _, edge := range potentialEdges {
 			if edge <= 0 || edge >= nodeCount {
@@ -89,7 +84,7 @@ func FindLowestRiskLevel() int {
 			edgeRow := edge / rowCount
 			edgeCol := edge - (edgeRow * rowCount)
 
-			newDist := dist[node.index] + riskLevels[edgeCol][edgeCol] // fix
+			newDist := dist[node.value] + riskLevels[edgeCol][edgeCol] // fix
 
 			if newDist < dist[edge] {
 				dist[edge] = newDist
@@ -97,7 +92,8 @@ func FindLowestRiskLevel() int {
 			}
 		}
 
-		if node.index == nodeCount-1 {
+		fmt.Println(node.value)
+		if node.value == nodeCount-1 {
 			return dist[nodeCount]
 		}
 	}
