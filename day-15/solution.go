@@ -5,6 +5,7 @@ import (
 	"container/heap"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -52,7 +53,7 @@ func FindLowestRiskLevel() int {
 	dist := make([]int, nodeCount)
 
 	for i := range dist {
-		dist[i] = 10 // infinity in terms of risk level
+		dist[i] = math.MaxInt32 // infinity in terms of risk level
 	}
 
 	dist[0] = 0
@@ -72,7 +73,6 @@ func FindLowestRiskLevel() int {
 		}
 
 		potentialEdges := []int{node.value + rowCount, node.value - rowCount, node.value + 1, node.value - 1}
-
 		for _, edge := range potentialEdges {
 			if edge <= 0 || edge >= nodeCount {
 				continue
@@ -92,13 +92,12 @@ func FindLowestRiskLevel() int {
 			}
 		}
 
-		fmt.Println(node.value)
 		if node.value == nodeCount-1 {
-			return dist[nodeCount]
+			return dist[nodeCount-1]
 		}
 	}
 
-	return 10
+	return math.MaxInt32
 }
 
 func main() {
