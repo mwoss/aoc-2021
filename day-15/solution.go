@@ -53,6 +53,11 @@ func (pq *PriorityQueue) Pop() interface{} {
 	return item
 }
 
+type Node struct {
+	x int
+	y int
+}
+
 ///...............
 
 func unpackInput(inp string) []int {
@@ -72,7 +77,7 @@ func convertStrToInt(str string) int {
 }
 
 func FindLowestRiskLevel() int {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("input2.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -116,23 +121,29 @@ func FindLowestRiskLevel() int {
 			continue
 		}
 
-		potentialEdges := []int{node.value + rowCount, node.value - rowCount, node.value + 1, node.value - 1}
+		edgeRow := node.value / rowCount
+		edgeCol := node.value - (edgeRow * rowCount)
+
+		potentialEdges := []Node{{edgeRow + 1, edgeCol}, {edgeRow - 1, edgeCol}, {edgeRow, edgeCol + 1}, {edgeRow, edgeCol - 1}}
 		for _, edge := range potentialEdges {
-			if edge <= 0 || edge >= nodeCount {
-				continue
-			}
-			if visited[edge] {
+			if edge.x < 0 || edge.x >= len(riskLevels) || edge.y < 0 || edge.y >= rowCount {
 				continue
 			}
 
-			edgeRow := edge / rowCount
-			edgeCol := edge - (edgeRow * rowCount)
+			nodeId := edge.x*len(riskLevels) + edge.y
 
-			newDist := dist[node.value] + riskLevels[edgeRow][edgeCol] // fix
+			if visited[nodeId] {
+				continue
+			}
 
-			if newDist < dist[edge] {
-				dist[edge] = newDist
-				heap.Push(&pq, &Item{value: edge, priority: newDist})
+			//edgeRow := edge / rowCount
+			//edgeCol := edge - (edgeRow * rowCount)
+
+			newDist := dist[node.value] + riskLevels[edge.x][edge.y] // fix
+
+			if newDist < dist[nodeId] {
+				dist[nodeId] = newDist
+				heap.Push(&pq, &Item{value: nodeId, priority: newDist})
 			}
 		}
 
