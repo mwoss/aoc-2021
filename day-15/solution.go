@@ -95,6 +95,10 @@ func FindLowestRiskLevel() int {
 		riskLevels = append(riskLevels, unpackInput(scanner.Text()))
 	}
 
+	if len(riskLevels) == 0 {
+		log.Fatal("risk level grid has been incorrectly parsed, collection length should be greater than 0")
+	}
+
 	nodeCount := len(riskLevels) * len(riskLevels[0])
 	rowCount := len(riskLevels[0])
 
@@ -135,9 +139,6 @@ func FindLowestRiskLevel() int {
 			if visited[nodeId] {
 				continue
 			}
-
-			//edgeRow := edge / rowCount
-			//edgeCol := edge - (edgeRow * rowCount)
 
 			newDist := dist[node.value] + riskLevels[edge.x][edge.y] // fix
 
