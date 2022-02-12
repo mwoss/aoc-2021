@@ -11,54 +11,10 @@ import (
 	"strings"
 )
 
-// ............
-// An Item is something we manage in a priority queue.
-type Item struct {
-	value    int // The value of the item; arbitrary.
-	priority int // The priority of the item in the queue.
-	// The index is needed by update and is maintained by the heap.Interface methods.
-	index int // The index of the item in the heap.
-}
-
-// A PriorityQueue implements heap.Interface and holds Items.
-type PriorityQueue []*Item
-
-func (pq PriorityQueue) Len() int { return len(pq) }
-
-func (pq PriorityQueue) Less(i, j int) bool {
-	// We want Pop to give us the highest, not lowest, priority so we use greater than here.
-	return pq[i].priority > pq[j].priority
-}
-
-func (pq PriorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
-}
-
-func (pq *PriorityQueue) Push(x interface{}) {
-	n := len(*pq)
-	item := x.(*Item)
-	item.index = n
-	*pq = append(*pq, item)
-}
-
-func (pq *PriorityQueue) Pop() interface{} {
-	old := *pq
-	n := len(old)
-	item := old[n-1]
-	old[n-1] = nil  // avoid memory leak
-	item.index = -1 // for safety
-	*pq = old[0 : n-1]
-	return item
-}
-
 type Node struct {
 	x int
 	y int
 }
-
-///...............
 
 func unpackInput(inp string) []int {
 	var levels []int
@@ -77,7 +33,7 @@ func convertStrToInt(str string) int {
 }
 
 func FindLowestRiskLevel() int {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("input2.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,17 +59,16 @@ func FindLowestRiskLevel() int {
 	rowCount := len(riskLevels[0])
 
 	visited := make([]bool, nodeCount)
-	dist := make([]int, nodeCount)
+	distances := make([]int, nodeCount)
 
-	for i := range dist {
-		dist[i] = math.MaxInt32 // infinity in terms of risk level
+	for i := range distances {
+		distances[i] = math.MaxInt32 // infinity in terms of risk level
 	}
 
-	dist[0] = 0
+	distances[0] = 0
 
 	pq := PriorityQueue{}
 	heap.Init(&pq)
-
 	heap.Push(&pq, &Item{value: 0, priority: 0})
 
 	for pq.Len() != 0 {
@@ -125,36 +80,35 @@ func FindLowestRiskLevel() int {
 
 		visited[node.value] = true
 
-		//if dist[node.value] < node.priority {
-		//	continue
-		//}
+		if distances[node.value] < node.priority {
+			continue
+		}
 
-		edgeRow := node.value / rowCount
-		edgeCol := node.value - (edgeRow * rowCount)
-		potentialEdges := []Node{{edgeRow + 1, edgeCol}, {edgeRow - 1, edgeCol}, {edgeRow, edgeCol + 1}, {edgeRow, edgeCol - 1}}
+		rowId := node.value / rowCount
+		colId := node.value - (rowId * rowCount)
+		potentialNeighbors := []Node{
+			{rowId + 1, colId},
+			{rowId - 1, colId},
+			{rowId, colId + 1},
+			{rowId, colId - 1},
+		}
 
-		for _, edge := range potentialEdges {
-			if edge.x < 0 || edge.x >= len(riskLevels) || edge.y < 0 || edge.y >= rowCount {
+		for _, neighbor := range potentialNeighbors {
+			if neighbor.x < 0 || neighbor.x >= len(riskLevels) || neighbor.y < 0 || neighbor.y >= rowCount {
 				continue
 			}
 
-			nodeId := edge.x*len(riskLevels) + edge.y
+			nodeId := neighbor.x*len(riskLevels) + neighbor.y
+			newDistance := -distances[node.value] + riskLevels[neighbor.x][neighbor.y]
 
-			//if visited[nodeId] {
-			//	continue
-			//}
-
-			newDist := -dist[node.value] + riskLevels[edge.x][edge.y] // fix
-
-			if newDist < dist[nodeId] {
-				dist[nodeId] = -newDist
-				heap.Push(&pq, &Item{value: nodeId, priority: -newDist})
+			if newDistance < distances[nodeId] {
+				distances[nodeId] = -newDistance
+				heap.Push(&pq, &Item{value: nodeId, priority: -newDistance})
 			}
 		}
 
 		if node.value == nodeCount-1 {
-			fmt.Println(dist[:10])
-			return -dist[nodeCount-1]
+			return -distances[nodeCount-1]
 		}
 	}
 
