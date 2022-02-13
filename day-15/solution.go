@@ -16,7 +16,33 @@ type Node struct {
 	y int
 }
 
-func unpackInput(inp string) []int {
+func readRiskLevels(inputFile string) [][]int {
+	file, err := os.Open(inputFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(file)
+
+	var riskLevels [][]int
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		riskLevels = append(riskLevels, unpackInputLine(scanner.Text()))
+	}
+
+	if len(riskLevels) == 0 {
+		log.Fatal("risk level grid has been incorrectly parsed, collection length should be greater than 0")
+	}
+
+	return riskLevels
+}
+
+func unpackInputLine(inp string) []int {
 	var levels []int
 	for _, level := range strings.Split(inp, "") {
 		levels = append(levels, convertStrToInt(level))
@@ -32,29 +58,7 @@ func convertStrToInt(str string) int {
 	return converted
 }
 
-func FindLowestRiskLevel() int {
-	file, err := os.Open("input2.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func(file *os.File) {
-		err := file.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(file)
-
-	var riskLevels [][]int
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		riskLevels = append(riskLevels, unpackInput(scanner.Text()))
-	}
-
-	if len(riskLevels) == 0 {
-		log.Fatal("risk level grid has been incorrectly parsed, collection length should be greater than 0")
-	}
-
+func FindLowestRiskLevel(riskLevels [][]int) int {
 	nodeCount := len(riskLevels) * len(riskLevels[0])
 	rowCount := len(riskLevels[0])
 
@@ -116,5 +120,6 @@ func FindLowestRiskLevel() int {
 }
 
 func main() {
-	fmt.Println(FindLowestRiskLevel())
+	riskLevels := readRiskLevels("input.txt")
+	fmt.Println(FindLowestRiskLevel(riskLevels))
 }
