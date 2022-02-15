@@ -58,7 +58,7 @@ func convertStrToInt(str string) int {
 	return converted
 }
 
-func FindLowestRiskLevel(riskLevels [][]int) int {
+func FindLowestRiskLevelPath(riskLevels [][]int) int {
 	nodeCount := len(riskLevels) * len(riskLevels[0])
 	rowCount := len(riskLevels[0])
 
@@ -119,7 +119,41 @@ func FindLowestRiskLevel(riskLevels [][]int) int {
 	return math.MaxInt32
 }
 
+func max(a, b int) int {
+	if a <= b {
+		return b
+	}
+	return a
+}
+
+func FindLowestRiskLevelPathOnExtendedMap(riskLevels [][]int) int {
+	for i := range riskLevels {
+		l := len(riskLevels[i])
+		for j := 1; j < 5; j++ {
+			for k := 0; k < l; k++ {
+				riskLevels[i] = append(riskLevels[i], max((riskLevels[i][k]+j)%10, 1))
+			}
+		}
+	}
+
+	s := len(riskLevels)
+	for j := 1; j < 5; j++ {
+		for i := 0; i < s; i++ {
+			var extRow []int
+			for k := 0; k < len(riskLevels[i]); k++ {
+				extRow = append(extRow, max((riskLevels[i][k]+j)%10, 1))
+			}
+			riskLevels = append(riskLevels, extRow)
+		}
+	}
+	fmt.Println(riskLevels)
+	fmt.Println(len(riskLevels))
+	fmt.Println(len(riskLevels[0]))
+	return FindLowestRiskLevelPath(riskLevels)
+}
+
 func main() {
-	riskLevels := readRiskLevels("input.txt")
-	fmt.Println(FindLowestRiskLevel(riskLevels))
+	riskLevels := readRiskLevels("input2.txt")
+	//fmt.Println(FindLowestRiskLevelPath(riskLevels))
+	fmt.Println(FindLowestRiskLevelPathOnExtendedMap(riskLevels))
 }
