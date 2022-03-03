@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import List
 
 hex_to_bin = {
     "0": "0000",
@@ -19,12 +20,18 @@ hex_to_bin = {
     "F": "1111",
 }
 
+
 @dataclass
 class PacketMetadata:
     version: int
     type_id: int
     size: int
-    sub_packets: any
+    sub_packets: List["PacketMetadata"]
+
+
+def to_binary_repr(hex_repr: str) -> str:
+    return "".join(hex_to_bin[hex_val] for hex_val in hex_repr)
+
 
 def sum_versions(payload: PacketMetadata) -> int:
     if payload.type_id == 4:
@@ -33,7 +40,6 @@ def sum_versions(payload: PacketMetadata) -> int:
 
 
 def decode_packet(packet: str) -> PacketMetadata:
-    # packet header
     version = int(packet[:3], 2)
     type_id = int(packet[3: 6], 2)
     size = 6
@@ -45,8 +51,7 @@ def decode_packet(packet: str) -> PacketMetadata:
             size += 5
             if packet[i] == "0":
                 break
-        sub_packets = int("".join(sub_packets), 2)
-
+        # sub_packets = int("".join(sub_packets), 2)
     else:
         size += 1
         if packet[6] == "0":
@@ -73,7 +78,7 @@ def decode_packet(packet: str) -> PacketMetadata:
 
 def payload_value(payload: PacketMetadata) -> int:
     if payload.type_id == 4:
-        return payload.sub_packets
+        return int("".join(payload.sub_packets), 2)
 
     values = [payload_value(sub) for sub in payload.sub_packets]
 
@@ -100,9 +105,8 @@ if __name__ == '__main__':
     with open("input.txt", "r") as file:
         content = file.read().strip()
 
-    binary_repr = ""
-    for hex_val in content:
-        binary_repr += hex_to_bin[hex_val]
+    binary_repr = to_binary_repr(content)
+    decoded_packet = decode_packet(binary_repr)
 
-    print(sum_versions(decode_packet(binary_repr)))
-    print(payload_value(decode_packet(binary_repr)))
+    print(sum_versions(decoded_packet))
+    print(payload_value(decoded_packet))
