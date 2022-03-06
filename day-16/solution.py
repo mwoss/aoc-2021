@@ -26,6 +26,7 @@ class PacketMetadata:
     version: int
     type_id: int
     size: int
+    bits: List[str]
     sub_packets: List["PacketMetadata"]
 
 
@@ -40,18 +41,16 @@ def sum_versions(payload: PacketMetadata) -> int:
 
 
 def decode_packet(packet: str) -> PacketMetadata:
-    version = int(packet[:3], 2)
-    type_id = int(packet[3: 6], 2)
-    size = 6
+    version, type_id, size, = int(packet[:3], 2), int(packet[3: 6], 2), 6
+    literal_packets = list()
     sub_packets = list()
 
     if type_id == 4:
         for i in range(6, len(packet), 5):
-            sub_packets.append(packet[i + 1: i + 5])
+            literal_packets.append(packet[i + 1: i + 5])
             size += 5
             if packet[i] == "0":
                 break
-        # sub_packets = int("".join(sub_packets), 2)
     else:
         size += 1
         if packet[6] == "0":
@@ -73,31 +72,31 @@ def decode_packet(packet: str) -> PacketMetadata:
                 size += decoded_sub.size
                 data = packet[size:]
 
-    return PacketMetadata(version, type_id, size, sub_packets)
+    return PacketMetadata(version, type_id, size, literal_packets, sub_packets)
 
 
 def payload_value(payload: PacketMetadata) -> int:
     if payload.type_id == 4:
-        return int("".join(payload.sub_packets), 2)
+        return int("".join(payload.bits), 2)
 
     values = [payload_value(sub) for sub in payload.sub_packets]
 
-    if payload.type_id == 0:  # sum
+    if payload.type_id == 0:
         return sum(values)
-    elif payload.type_id == 1:  # product
+    elif payload.type_id == 1:
         prod = 1
         for value in values:
             prod *= value
         return prod
-    elif payload.type_id == 2:  # minimum
+    elif payload.type_id == 2:
         return min(values)
-    elif payload.type_id == 3:  # maximum
+    elif payload.type_id == 3:
         return max(values)
-    elif payload.type_id == 5:  # greater than
+    elif payload.type_id == 5:
         return 1 if values[0] > values[1] else 0
-    elif payload.type_id == 6:  # less than
+    elif payload.type_id == 6:
         return 1 if values[0] < values[1] else 0
-    else:  # payload[1] == 7, equal to
+    else:
         return 1 if values[0] == values[1] else 0
 
 
