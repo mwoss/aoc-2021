@@ -33,4 +33,10 @@ func main() {
 
 	fmt.Println(x1, x2)
 	fmt.Println(y1, y2)
+
+	// x - initial x velocity value
+	// y - initial y velocity value
+	// (x1..x2) = x + (x-1) + (x-2) + (x-3) + ... (if positive)
+	// (x1..x2) = x + (x+1) + (x+2) + (x+3) + ... (if negative)
+	// (y1..y2) = y + (y-1) + (y-2) + (y-3) + ... (all cases)
 }
