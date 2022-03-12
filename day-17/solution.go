@@ -5,8 +5,17 @@ import (
 	"io/ioutil"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 )
+
+func convertStrToInt(str string) int {
+	converted, err := strconv.Atoi(str)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return converted
+}
 
 func main() {
 	rawContent, err := ioutil.ReadFile("input.txt")
@@ -28,8 +37,8 @@ func main() {
 	x := strings.Split(matches[0], "..")
 	y := strings.Split(matches[1], "..")
 
-	x1, x2 := x[0], x[1]
-	y1, y2 := y[0], y[1]
+	x1, x2 := convertStrToInt(x[0]), convertStrToInt(x[1])
+	y1, y2 := convertStrToInt(y[0]), convertStrToInt(y[1])
 
 	fmt.Println(x1, x2)
 	fmt.Println(y1, y2)
@@ -39,4 +48,6 @@ func main() {
 	// (x1..x2) = x + (x-1) + (x-2) + (x-3) + ... (if positive)
 	// (x1..x2) = x + (x+1) + (x+2) + (x+3) + ... (if negative)
 	// (y1..y2) = y + (y-1) + (y-2) + (y-3) + ... (all cases)
+
+	fmt.Println((y1 + 1) * y2 / 2) // height decrease by 1 with each step, so maybe we could just calculate the sequence of n..1 numbers?
 }
