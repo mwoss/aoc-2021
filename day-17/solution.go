@@ -48,6 +48,6 @@ func main() {
 	// (x1..x2) = x + (x-1) + (x-2) + (x-3) + ... (if positive)
 	// (x1..x2) = x + (x+1) + (x+2) + (x+3) + ... (if negative)
 	// (y1..y2) = y + (y-1) + (y-2) + (y-3) + ... (all cases)
-
-	fmt.Println((y1 + 1) * y2 / 2) // height decrease by 1 with each step, so maybe we could just calculate the sequence of n..1 numbers?
+	n := -y1 - 1
+	fmt.Println(n * (n + 1) / 2) // height decrease by 1 with each step, so maybe we could just calculate the sequence of n..1 numbers?
 }
