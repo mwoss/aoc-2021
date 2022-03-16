@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+type TargetArea struct {
+	x1, x2, y1, y2 int
+}
+
 func convertStrToInt(str string) int {
 	converted, err := strconv.Atoi(str)
 	if err != nil {
@@ -17,13 +21,7 @@ func convertStrToInt(str string) int {
 	return converted
 }
 
-func main() {
-	rawContent, err := ioutil.ReadFile("input.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	content := string(rawContent)
-
+func parseFileContent(content string) TargetArea {
 	reg, err := regexp.Compile("([-]?\\d+..[-]?\\d+)")
 	if err != nil {
 		log.Fatal(err)
@@ -37,17 +35,27 @@ func main() {
 	x := strings.Split(matches[0], "..")
 	y := strings.Split(matches[1], "..")
 
-	x1, x2 := convertStrToInt(x[0]), convertStrToInt(x[1])
-	y1, y2 := convertStrToInt(y[0]), convertStrToInt(y[1])
+	return TargetArea{
+		x1: convertStrToInt(x[0]),
+		x2: convertStrToInt(x[1]),
+		y1: convertStrToInt(y[0]),
+		y2: convertStrToInt(y[1]),
+	}
+}
 
-	fmt.Println(x1, x2)
-	fmt.Println(y1, y2)
+func findHighestPositionToReachArea(area TargetArea) int {
+	// height decrease by 1 with each step, so maybe we could just calculate the sequence of n..1 numbers?
+	n := -area.y1 - 1
+	return n * (n + 1) / 2
+}
 
-	// x - initial x velocity value
-	// y - initial y velocity value
-	// (x1..x2) = x + (x-1) + (x-2) + (x-3) + ... (if positive)
-	// (x1..x2) = x + (x+1) + (x+2) + (x+3) + ... (if negative)
-	// (y1..y2) = y + (y-1) + (y-2) + (y-3) + ... (all cases)
-	n := -y1 - 1
-	fmt.Println(n * (n + 1) / 2) // height decrease by 1 with each step, so maybe we could just calculate the sequence of n..1 numbers?
+func main() {
+	rawContent, err := ioutil.ReadFile("input.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	area := parseFileContent(string(rawContent))
+
+	fmt.Println(findHighestPositionToReachArea(area))
 }
