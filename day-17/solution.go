@@ -73,6 +73,10 @@ func getMinimalXVelocity(x int) int {
 		// delta == 0 case will be handled later lol
 		log.Fatal("Delta cannot be a negative number")
 	}
+	if delta == 0 {
+		return 0 // roundUp(-b/2a)
+	}
+
 	sqrDelta := math.Sqrt(float64(delta))
 	x1 := (-1.0 - sqrDelta) / 2.0
 	x2 := (-1.0 + sqrDelta) / 2.0
