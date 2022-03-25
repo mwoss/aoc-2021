@@ -59,7 +59,11 @@ func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
 	// x2 = 30
 
 	minXVelocity := getMinimalXVelocity(area.x1)
-	fmt.Println(minXVelocity)
+	maxXVelocity := area.x2
+	minYVelocity := area.y1
+	maxYVelocity := 0
+
+	fmt.Println(minXVelocity ,maxXVelocity, minYVelocity, maxYVelocity)
 
 	return []Velocity{}
 }
