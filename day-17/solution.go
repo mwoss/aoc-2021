@@ -61,11 +61,50 @@ func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
 	minXVelocity := getMinimalXVelocity(area.x1)
 	maxXVelocity := area.x2
 	minYVelocity := area.y1
-	maxYVelocity := 0
+	maxYVelocity := 0 // find max
 
-	fmt.Println(minXVelocity ,maxXVelocity, minYVelocity, maxYVelocity)
+	fmt.Println(minXVelocity, maxXVelocity, minYVelocity, maxYVelocity)
+
+	var velocities []Velocity
+
+	for x := minXVelocity; x <= maxXVelocity; x++ {
+		for y := minYVelocity; y <= maxYVelocity; y++ {
+			v := Velocity{x, y}
+			if canReachArea(v, area) {
+				velocities = append(velocities, v)
+			}
+		}
+	}
+
+	fmt.Println(velocities)
 
 	return []Velocity{}
+}
+
+func canReachArea(v Velocity, area TargetArea) bool {
+	currX, currY := 0, 0
+	for v.x != 0 {
+		currX += v.x
+		currY += v.y
+
+		if currX >= area.x1 && currX <= area.x2 && currY >= area.y1 && currY <= area.y2 {
+			return true
+		}
+
+		if v.x > 0 {
+			v.x -= 1
+		} else {
+			v.x += 1
+		}
+
+		v.y -= 1
+	}
+
+	if currX >= area.x1 && currX <= area.x2 && currY < area.y1 {
+		return true
+	}
+
+	return false
 }
 
 func getMinimalXVelocity(x int) int {
