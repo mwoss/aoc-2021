@@ -61,7 +61,7 @@ func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
 	minXVelocity := getMinimalXVelocity(area.x1)
 	maxXVelocity := area.x2
 	minYVelocity := area.y1
-	maxYVelocity := 0 // find max
+	maxYVelocity := 100 // find max
 
 	fmt.Println(minXVelocity, maxXVelocity, minYVelocity, maxYVelocity)
 
@@ -76,9 +76,7 @@ func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
 		}
 	}
 
-	fmt.Println(velocities)
-
-	return []Velocity{}
+	return velocities
 }
 
 func canReachArea(v Velocity, area TargetArea) bool {
@@ -91,6 +89,8 @@ func canReachArea(v Velocity, area TargetArea) bool {
 			return true
 		}
 
+		// optimize if already out of bound
+
 		if v.x > 0 {
 			v.x -= 1
 		} else {
@@ -100,7 +100,7 @@ func canReachArea(v Velocity, area TargetArea) bool {
 		v.y -= 1
 	}
 
-	if currX >= area.x1 && currX <= area.x2 && currY < area.y1 {
+	if currX >= area.x1 && currX <= area.x2 && currY > area.y1 {
 		return true
 	}
 
@@ -131,7 +131,7 @@ func getMinimalXVelocity(x int) int {
 }
 
 func main() {
-	rawContent, err := ioutil.ReadFile("input.txt")
+	rawContent, err := ioutil.ReadFile("input2.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -139,5 +139,9 @@ func main() {
 	area := parseFileContent(string(rawContent))
 
 	fmt.Println(findHighestPositionToReachArea(area))
-	fmt.Println(findEveryInitVelocityToReachArea(area))
+
+	x := findEveryInitVelocityToReachArea(area)
+
+	fmt.Println(len(x))
+	fmt.Println(x)
 }
