@@ -85,11 +85,14 @@ func canReachArea(v Velocity, area TargetArea) bool {
 		currX += v.x
 		currY += v.y
 
+		// optimize if already out of bound
+		if currX > area.x2 {
+		    return false
+		}
+
 		if currX >= area.x1 && currX <= area.x2 && currY >= area.y1 && currY <= area.y2 {
 			return true
 		}
-
-		// optimize if already out of bound
 
 		if v.x > 0 {
 			v.x -= 1
