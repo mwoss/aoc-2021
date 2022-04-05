@@ -55,9 +55,6 @@ func findHighestPositionToReachArea(area TargetArea) int {
 }
 
 func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
-	// x1 = 20
-	// x2 = 30
-
 	minXVelocity := getMinimalXVelocity(area.x1)
 	maxXVelocity := area.x2
 	minYVelocity := area.y1
@@ -85,7 +82,6 @@ func canReachArea(v Velocity, area TargetArea) bool {
 		currX += v.x
 		currY += v.y
 
-		// optimize if already out of bound
 		if currX > area.x2 {
 		    return false
 		}
@@ -96,8 +92,6 @@ func canReachArea(v Velocity, area TargetArea) bool {
 
 		if v.x > 0 {
 			v.x -= 1
-		} else {
-			v.x += 1
 		}
 
 		v.y -= 1
@@ -116,7 +110,6 @@ func getMinimalXVelocity(x int) int {
 	// a^2 + a - 2x = 0
 	delta := 1 - 4*(-2*x)
 	if delta < 0 {
-		// delta == 0 case will be handled later lol
 		log.Fatal("Delta cannot be a negative number")
 	}
 	if delta == 0 {
