@@ -55,10 +55,14 @@ func findHighestPositionToReachArea(area TargetArea) int {
 }
 
 func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
-	minXVelocity := getMinimalXVelocity(area.x1)
-	maxXVelocity := area.x2
-	minYVelocity := area.y1
-	maxYVelocity := 100 // find max
+// 	minXVelocity := getMinimalXVelocity(area.x1)
+// 	maxXVelocity := area.x2
+// 	minYVelocity := area.y1
+// 	maxYVelocity := 100 // find max
+	minXVelocity := -1000
+	maxXVelocity := 1000
+	minYVelocity := -1000
+	maxYVelocity := 1000 // find max
 
 	fmt.Println(minXVelocity, maxXVelocity, minYVelocity, maxYVelocity)
 
@@ -78,28 +82,44 @@ func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
 
 func canReachArea(v Velocity, area TargetArea) bool {
 	currX, currY := 0, 0
-	for v.x != 0 {
+	for {
 		currX += v.x
 		currY += v.y
 
-		if currX > area.x2 {
-		    return false
-		}
+        if v.x > 0 {
+            v.x -= 1
+        } else if (v.x < 0) {
+            v.x += 1
+        }
+
+		v.y -= 1
+
+
 
 		if currX >= area.x1 && currX <= area.x2 && currY >= area.y1 && currY <= area.y2 {
 			return true
 		}
 
-		if v.x > 0 {
-			v.x -= 1
-		}
+		if currX > area.x2 && currY > area.y2 {
+            return false
+        }
 
-		v.y -= 1
+
+        if !(currX >= area.x1 && currX <= area.x2) {
+            return false
+        }
+
+        if v.y < 0 && currY < area.y1 {
+            return false
+        }
+
 	}
 
-	if currX >= area.x1 && currX <= area.x2 && currY > area.y1 {
-		return true
-	}
+
+
+// 	if currX >= area.x1 && currX <= area.x2 && currY > area.y1 {
+// 		return true
+// 	}
 
 	return false
 }
@@ -139,5 +159,5 @@ func main() {
 	x := findEveryInitVelocityToReachArea(area)
 
 	fmt.Println(len(x))
-	fmt.Println(x)
+// 	fmt.Println(x)
 }
