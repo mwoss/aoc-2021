@@ -54,29 +54,28 @@ func findHighestPositionToReachArea(area TargetArea) int {
 	return n * (n + 1) / 2
 }
 
-func findEveryInitVelocityToReachArea(area TargetArea) []Velocity {
+func findNumberOfInitVelocityToReachArea(area TargetArea) int {
 	minXVelocity := getMinimalXVelocity(area.x1)
 	maxXVelocity := area.x2
 	minYVelocity := area.y1
-	maxYVelocity := 100 // find max
+	maxYVelocity := findHighestPositionToReachArea(area)
 
-	fmt.Println(minXVelocity, maxXVelocity, minYVelocity, maxYVelocity)
-
-	var velocities []Velocity
+	numOfInitVelocities := 0
 
 	for x := minXVelocity; x <= maxXVelocity; x++ {
 		for y := minYVelocity; y <= maxYVelocity; y++ {
 			v := Velocity{x, y}
 			if canReachArea(v, area) {
-				velocities = append(velocities, v)
+				numOfInitVelocities++
 			}
 		}
 	}
 
-	return velocities
+	return numOfInitVelocities
 }
 
 func canReachArea(v Velocity, area TargetArea) bool {
+    // unoptimized, but it works :3
 	currX, currY := 0, 0
 	for {
 		currX += v.x
@@ -98,7 +97,6 @@ func canReachArea(v Velocity, area TargetArea) bool {
             return false
         }
 
-
         if v.x == 0 && !(currX >= area.x1 && currX <= area.x2) {
             return false
         }
@@ -107,10 +105,6 @@ func canReachArea(v Velocity, area TargetArea) bool {
             return false
         }
 	}
-
-// 	if currX >= area.x1 && currX <= area.x2 && currY > area.y1 {
-// 		return true
-// 	}
 
 	return false
 }
@@ -132,13 +126,13 @@ func getMinimalXVelocity(x int) int {
 	x2 := (-1.0 + sqrDelta) / 2.0
 
 	if x1 > x2 {
-		return int(x1) + 1
+		return int(x1)
 	}
-	return int(x2) + 1
+	return int(x2)
 }
 
 func main() {
-	rawContent, err := ioutil.ReadFile("input2.txt")
+	rawContent, err := ioutil.ReadFile("input.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,8 +140,5 @@ func main() {
 	area := parseFileContent(string(rawContent))
 
 	fmt.Println(findHighestPositionToReachArea(area))
-
-	x := findEveryInitVelocityToReachArea(area)
-
-	fmt.Println(len(x))
+	fmt.Println(findNumberOfInitVelocityToReachArea(area))
 }
